@@ -14,25 +14,34 @@ const __dirname = dirname(__filename);
 
 let serviceAccount;
 
+// Option 1: Load from full JSON string (e.g., for Render/Vercel)
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   } catch (error) {
     console.error('Error parsing FIREBASE_SERVICE_ACCOUNT env var:', error.message);
-    process.exit(1);
   }
-} else {
+} 
+
+// Option 2: Load from individual environment variables (Robust fallback)
+if (!serviceAccount && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+  serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  };
+  console.log('📝 Using individual Firebase environment variables');
+}
+
+// Option 3: Load from local file (Development)
+if (!serviceAccount) {
   try {
-    // Try to read the service account key file
     const serviceAccountPath = join(__dirname, '..', 'serviceAccountKey.json');
     const serviceAccountData = readFileSync(serviceAccountPath, 'utf8');
     serviceAccount = JSON.parse(serviceAccountData);
   } catch (error) {
-    console.error('Error loading service account key:', error.message);
-    console.warn('Deployment Tip: On Render, set the FIREBASE_SERVICE_ACCOUNT environment variable with the content of your serviceAccountKey.json');
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
+    console.error('Error loading serviceAccountKey.json:', error.message);
+    console.warn('💡 Tip: For production, set FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY environment variables.');
   }
 }
 
