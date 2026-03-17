@@ -1,0 +1,23 @@
+URL: https://res.cloudinary.com/dnkoblpy7/raw/upload/v1773438566/resumes/resume-1773438563624-58219807.pdf
+Signed URL: https://res.cloudinary.com/dnkoblpy7/raw/upload/s--EDfbb7fU--/v1/resumes/resume-1773438563624-58219807.pdf
+Resource Type: raw
+Full Result: {
+  "asset_id": "33cedc4ec009b7475268ddc91968acf5",
+  "public_id": "resumes/resume-1773438563624-58219807.pdf",
+  "version": 1773438566,
+  "version_id": "d3d2d910f76aa7628f710a4396879c25",
+  "signature": "35287114774d06916629615e9a01b5687221b626",
+  "resource_type": "raw",
+  "created_at": "2026-03-13T21:49:26Z",
+  "tags": [],
+  "bytes": 328,
+  "type": "upload",
+  "etag": "38b14dd98f972de267e50a157d40856d",
+  "placeholder": false,
+  "url": "http://res.cloudinary.com/dnkoblpy7/raw/upload/v1773438566/resumes/resume-1773438563624-58219807.pdf",
+  "secure_url": "https://res.cloudinary.com/dnkoblpy7/raw/upload/v1773438566/resumes/resume-1773438563624-58219807.pdf",
+  "asset_folder": "resumes",
+  "display_name": "resume-1773438563624-58219807.pdf",
+  "access_mode": "public",
+  "api_key": "345424753343488"
+}
