@@ -43,18 +43,26 @@ export let auth;
 export let db;
 
 // Initialize Firebase Admin
-if (serviceAccount) {
-  const app = initializeApp({
-    credential: cert(serviceAccount),
-    projectId: projectId,
-  });
+try {
+  if (serviceAccount) {
+    const app = initializeApp({
+      credential: cert(serviceAccount),
+      projectId: projectId,
+    });
 
-  // Initialize Firebase services
-  auth = getAuth(app);
-  db = getFirestore(app);
+    // Initialize Firebase services
+    auth = getAuth(app);
+    db = getFirestore(app);
 
-  console.log('Firebase Admin initialized successfully');
-} else {
-  console.error('Firebase Admin NOT initialized - missing credentials');
+    console.log('✅ Firebase Admin initialized successfully');
+  } else {
+    throw new Error('No service account credentials provided.');
+  }
+} catch (error) {
+  console.error('❌ Firebase Admin NOT initialized:', error.message);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    console.error('CRITICAL: Firebase is required for this application to function. Exiting.');
+    process.exit(1);
+  }
 }
 
