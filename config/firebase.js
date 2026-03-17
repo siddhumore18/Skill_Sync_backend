@@ -55,16 +55,32 @@ export let db;
 // Initialize Firebase Admin
 try {
   if (serviceAccount) {
-    console.log(`🚀 Connecting to Firebase Project: ${projectId}`);
+    // source of truth for Project ID
+    const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id || serviceAccount.projectId;
     
     // Ensure the private key is formatted correctly for the SDK
+    let rawPrivateKey = serviceAccount.private_key || serviceAccount.privateKey || '';
+    
+    // Defensive parsing: Handle cases where the key might be wrapped in quotes or have literal \n strings
+    rawPrivateKey = rawPrivateKey.trim();
+    if (rawPrivateKey.startsWith('"') && rawPrivateKey.endsWith('"')) {
+      rawPrivateKey = rawPrivateKey.slice(1, -1);
+    }
+    const finalPrivateKey = rawPrivateKey.replace(/\\n/g, '\n');
+
     const formattedServiceAccount = {
       projectId: projectId,
       clientEmail: serviceAccount.client_email || serviceAccount.clientEmail,
-      privateKey: (serviceAccount.private_key || serviceAccount.privateKey || '').replace(/\\n/g, '\n'),
+      privateKey: finalPrivateKey,
     };
 
-    if (!formattedServiceAccount.privateKey.includes('BEGIN PRIVATE KEY')) {
+    console.log(`🚀 Connecting to Firebase Project: ${projectId}`);
+    console.log(`📧 Service Account Email: ${formattedServiceAccount.clientEmail}`);
+    
+    // Masked private key log for verification
+    if (finalPrivateKey.includes('BEGIN PRIVATE KEY')) {
+      console.log(`🔑 Private Key detected (Header OK). Length: ${finalPrivateKey.length}`);
+    } else {
       console.error('❌ Invalid FIREBASE_PRIVATE_KEY format. It must include BEGIN/END headers.');
     }
 
@@ -84,7 +100,7 @@ try {
 } catch (error) {
   console.error('❌ Firebase Admin NOT initialized:', error.message);
   if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-    console.error('CRITICAL: Firebase initialization failed. Please check your FIREBASE_PROJECT_ID and SERVICE_ACCOUNT credentials.');
+    console.error('CRITICAL: Firebase initialization failed. Ensure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY are set correctly on Render.');
     process.exit(1);
   }
 }
