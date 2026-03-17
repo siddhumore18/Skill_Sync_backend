@@ -94,6 +94,25 @@ try {
     db = getFirestore(app);
 
     console.log('✅ Firebase Admin initialized successfully');
+
+    // Startup Validation: Try to reach Firestore to verify credentials
+    const validateProject = async () => {
+      try {
+        await db.collection('_health_check').doc('ping').get();
+        console.log('📡 Firestore connectivity verified');
+      } catch (err) {
+        console.error('⚠️ Firebase Connectivity Warning:', err.message);
+        if (err.message.includes('UNAUTHENTICATED') || err.message.includes('permission_denied')) {
+          console.error('❌ CRITICAL: Your Service Account credentials (Private Key or Email) are invalid for the project: ' + projectId);
+          console.error('💡 Recommendation: Re-generate your Service Account JSON in Firebase Console and update your Render environment variables.');
+          if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+            process.exit(1);
+          }
+        }
+      }
+    };
+    validateProject();
+
   } else {
     throw new Error('No service account credentials provided.');
   }
