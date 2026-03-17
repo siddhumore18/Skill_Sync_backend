@@ -45,7 +45,8 @@ if (!serviceAccount) {
   }
 }
 
-const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id;
+// source of truth for Project ID
+const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount?.project_id || serviceAccount?.projectId;
 const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`;
 
 export let auth;
@@ -54,8 +55,21 @@ export let db;
 // Initialize Firebase Admin
 try {
   if (serviceAccount) {
+    console.log(`🚀 Connecting to Firebase Project: ${projectId}`);
+    
+    // Ensure the private key is formatted correctly for the SDK
+    const formattedServiceAccount = {
+      projectId: projectId,
+      clientEmail: serviceAccount.client_email || serviceAccount.clientEmail,
+      privateKey: (serviceAccount.private_key || serviceAccount.privateKey || '').replace(/\\n/g, '\n'),
+    };
+
+    if (!formattedServiceAccount.privateKey.includes('BEGIN PRIVATE KEY')) {
+      console.error('❌ Invalid FIREBASE_PRIVATE_KEY format. It must include BEGIN/END headers.');
+    }
+
     const app = initializeApp({
-      credential: cert(serviceAccount),
+      credential: cert(formattedServiceAccount),
       projectId: projectId,
     });
 
@@ -70,7 +84,7 @@ try {
 } catch (error) {
   console.error('❌ Firebase Admin NOT initialized:', error.message);
   if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-    console.error('CRITICAL: Firebase is required for this application to function. Exiting.');
+    console.error('CRITICAL: Firebase initialization failed. Please check your FIREBASE_PROJECT_ID and SERVICE_ACCOUNT credentials.');
     process.exit(1);
   }
 }
